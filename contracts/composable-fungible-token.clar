@@ -50,7 +50,7 @@
 ;; Decrease allowance of a specified spender.
 (define-private (decrease-allowance (amount uint) (spender principal) (owner principal))
   (let ((allowance-val (allowance spender owner)))
-    (if (or (> amount allowance) (<= amount u0))
+    (if (or (> amount allowance-val) (<= amount u0))
       true
       (begin
         (map-set allowances
@@ -61,13 +61,13 @@
         
 ;; Internal - Increase allowance of a specified spender.
 (define-private (increase-allowance (amount uint) (spender principal) (owner principal))
-  (let ((allowance (allowance spender owner)))
+  (let ((allowance-val (allowance spender owner)))
     (if (<= amount u0)
       false
       (begin
          (map-set allowances
           ((spender spender) (owner owner))
-          ((allowance (+ allowance amount))))
+          ((allowance-val (+ allowance-val amount))))
         true))))
 
 ;; Public functions
@@ -81,7 +81,7 @@
 (define-public (transfer-from (amount uint) (owner principal) (recipient principal) )
   (let ((allowance (allowance tx-sender owner)))
     (begin
-      (if (or (> amount allowance) (<= amount u0))
+      (if (or (> amount allowance-val) (<= amount u0))
         (err false)
         (if (and
             (unwrap! (transfer amount owner recipient) (err false))
@@ -99,9 +99,9 @@
 
 ;; Revoke a given spender
 (define-public (revoke (spender principal))
-  (let ((allowance (allowance spender tx-sender)))
-    (if (and (> allowance u0)
-             (decrease-allowance allowance spender tx-sender))
+  (let ((allowance-val (allowance spender tx-sender)))
+    (if (and (> allowance-val u0)
+             (decrease-allowance allowance-val spender tx-sender))
         (ok 0)
         (err false))))
 
