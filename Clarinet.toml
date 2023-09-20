@@ -1,0 +1,9 @@
+
+[project]
+name = "clarity-smart-contracts"
+
+[contracts.history]
+path = "contracts/composable-fungible-token.clar"
+depends_on = []
+
+[notebooks]

@@ -33,12 +33,12 @@
   (var-get total-supply))
 
 ;; Gets the amount of tokens that an owner allowed to a spender.
-(define-private (allowance-of (spender principal) (owner principal))
-  (begin
-  (default-to u0
-    (get allowance
-         (map-get? allowances ((spender spender) (owner owner))))))
+(define-private (allowance (spender principal) (owner principal))
+  (let ((allowance-val (default-to u0 (map-get? allowances (tuple (spender owner))))))
+    allowance-val
+  )
 )
+
 
 ;; Transfers tokens to a specified principal.
 (define-private (transfer (amount uint) (sender principal) (recipient principal) )
@@ -49,18 +49,19 @@
 
 ;; Decrease allowance of a specified spender.
 (define-private (decrease-allowance (amount uint) (spender principal) (owner principal))
-  (let ((allowance (allowance-of spender owner)))
+  (let ((allowance-val (allowance spender owner)))
     (if (or (> amount allowance) (<= amount u0))
       true
       (begin
         (map-set allowances
           ((spender spender) (owner owner))
-          ((allowance (- allowance amount))))
-        true))))
-
+          ((allowance-val (- allowance-val amount))))
+        true)))
+        )
+        
 ;; Internal - Increase allowance of a specified spender.
 (define-private (increase-allowance (amount uint) (spender principal) (owner principal))
-  (let ((allowance (allowance-of spender owner)))
+  (let ((allowance (allowance spender owner)))
     (if (<= amount u0)
       false
       (begin
@@ -78,7 +79,7 @@
 
 ;; Transfers tokens to a specified principal, performed by a spender
 (define-public (transfer-from (amount uint) (owner principal) (recipient principal) )
-  (let ((allowance (allowance-of tx-sender owner)))
+  (let ((allowance (allowance tx-sender owner)))
     (begin
       (if (or (> amount allowance) (<= amount u0))
         (err false)
@@ -98,7 +99,7 @@
 
 ;; Revoke a given spender
 (define-public (revoke (spender principal))
-  (let ((allowance (allowance-of spender tx-sender)))
+  (let ((allowance (allowance spender tx-sender)))
     (if (and (> allowance u0)
              (decrease-allowance allowance spender tx-sender))
         (ok 0)
@@ -116,7 +117,7 @@
 
 ;; Retrieve the number of decimals used
 (define-public (get-decimals)
-  18 ; Assuming 18 decimals
+  8 ;; Assuming 8 decimals
 )
 
 ;; Retrieve the balance of a specific principal
@@ -126,7 +127,7 @@
 
 ;; Retrieve the current total supply
 (define-public (get-total-supply)
-  (get-total-supply)
+  (var-get total-supply)
 )
 
 ;; Retrieve an example URI that represents metadata of this token
